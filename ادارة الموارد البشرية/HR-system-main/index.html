@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>نظام إدارة الموظفين — كامل</title>
+  <link rel="stylesheet" href="css/index.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" role="navigation" aria-label="القائمة الرئيسية">
+      <div class="brand">Edara • نظام إدارة الموظفين</div>
+      <nav class="nav">
+        <button class="nav-btn active" data-section="dashboard">لوحة التحكم</button>
+        <button class="nav-btn" data-section="basic">إدارة البيانات الأساسية</button>
+        <button class="nav-btn" data-section="recruitment">التوظيف</button>
+        <button class="nav-btn" data-section="attendance">الحضور والانصراف</button>
+        <button class="nav-btn" data-section="payroll">الرواتب والمزايا</button>
+        <button class="nav-btn" data-section="performance">إدارة الأداء</button>
+        <button class="nav-btn" data-section="training">التدريب والتطوير</button>
+        <button class="nav-btn" data-section="leaves">إدارة الإجازات</button>
+        <button class="nav-btn" data-section="reports">التقارير والإحصائيات</button>
+      </nav>
+      <div class="small-muted">البيانات مخزنة في الذاكرة فقط (افتراضي)</div>
+      <div style="margin-top:12px;text-align:center">
+        <button id="togglePersistence" class="btn ghost">Enable Persistence</button>
+      </div>
+    </aside>
+
+    <main class="main" role="main">
+      <header class="header">
+        <div class="page-title">لوحة التحكم</div>
+        <div class="controls">
+          <button id="openAddEmployee" class="btn">إضافة موظف</button>
+          <button id="exportJSON" class="btn secondary">تصدير JSON</button>
+          <button id="importJSONBtn" class="btn ghost">استيراد JSON</button>
+          <input id="importJSON" type="file" accept="application/json" style="display:none"/>
+        </div>
+      </header>
+
+      <!-- Sections -->
+      <section id="dashboard" class="section card">
+        <h2>لوحة التحكم</h2>
+        <div class="grid" style="margin-top:12px">
+          <div class="card">
+            <h3>إحصائيات سريعة</h3>
+            <div style="display:flex;gap:16px;margin-top:12px">
+              <div><div id="statTotalEmployees" style="font-size:20px">0</div><div class="small-muted">الموظفين</div></div>
+              <div><div id="statDepartments" style="font-size:20px">0</div><div class="small-muted">الأقسام</div></div>
+              <div><div id="statAttendance" style="font-size:20px">0</div><div class="small-muted">سجلات الحضور</div></div>
+              <div><div id="statPayrolls" style="font-size:20px">0</div><div class="small-muted">قسائم الرواتب</div></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>أحدث الموظفين</h3>
+            <table aria-label="أحدث الموظفين">
+              <thead><tr><th>الاسم</th><th>القسم</th><th>مسمى وظيفي</th><th>إجراءات</th></tr></thead>
+              <tbody id="recentEmployees"><tr><td colspan="4" class="small-muted">لا يوجد</td></tr></tbody>
+            </table>
+          </div>
+
+          <div class="card">
+            <h3>الأقسام</h3>
+            <div id="dashboardDepts" class="small-muted">لا يوجد</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="basic" class="section card" style="display:none">
+        <h2>إدارة البيانات الأساسية</h2>
+        <div style="margin:10px 0;display:flex;gap:8px;align-items:center">
+          <input id="basicSearch" class="form-control" placeholder="ابحث عن موظف..." />
+          <select id="basicDeptFilter" class="form-control"><option value="">كل الأقسام</option></select>
+          <button id="basicAddBtn" class="btn">إضافة</button>
+          <button id="basicExportCSV" class="btn secondary">تصدير CSV</button>
+        </div>
+        <table>
+          <thead><tr><th>اختيار</th><th>الاسم</th><th>العائلة</th><th>القسم</th><th>المسمى</th><th>الهاتف</th><th>الراتب</th><th>إجراءات</th></tr></thead>
+          <tbody id="basicTableBody"></tbody>
+        </table>
+      </section>
+
+      <section id="recruitment" class="section card" style="display:none">
+        <h2>التوظيف</h2>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+          <button id="openJobModal" class="btn">إضافة إعلان وظيفة</button>
+          <button id="viewApplicants" class="btn secondary">عرض المتقدمين</button>
+        </div>
+
+        <div style="margin-top:8px" id="jobsList">لا توجد وظائف منشورة</div>
+
+        <hr style="border:none;border-top:1px solid rgba(255,255,255,0.04);margin:12px 0" />
+
+        <h3>المتقدمين</h3>
+        <table><thead><tr><th>الاسم</th><th>الوظيفة المتقدم لها</th><th>الهاتف</th><th>البريد</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+        <tbody id="applicantsTable"><tr><td colspan="6" class="small-muted">لا يوجد</td></tr></tbody></table>
+      </section>
+
+      <section id="attendance" class="section card" style="display:none">
+        <h2>الحضور والانصراف</h2>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+          <select id="attendanceEmployee" class="form-control"></select>
+          <input id="attendanceIn" type="time" class="form-control" />
+          <input id="attendanceOut" type="time" class="form-control" />
+          <button id="attendanceSave" class="btn">سجل الحضور</button>
+          <button id="attendanceClock" class="btn secondary">Clock In/Out</button>
+        </div>
+        <table><thead><tr><th>الموظف</th><th>التاريخ</th><th>دخول</th><th>خروج</th><th>ساعات</th><th>حالة</th></tr></thead>
+        <tbody id="attendanceBody"></tbody></table>
+      </section>
+
+<section id="payroll" class="section card" style="display:none">
+  <h2>الرواتب والمزايا</h2>
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+    <select id="payEmployee" class="form-control"></select>
+    <input id="payBase" class="form-control" type="number" placeholder="الراتب الأساسي" />
+    <input id="payOvertime" class="form-control" type="number" placeholder="ساعات إضافية" />
+    <input id="payOvertimeRate" class="form-control" type="number" placeholder="أجر الساعة" />
+    <input id="payAllowances" class="form-control" type="number" placeholder="بدلات" />
+    <input id="payDeduction" class="form-control" type="number" placeholder="خصم" />
+    <button id="payCalc" class="btn">احسب الراتب</button>
+    <button id="paySave" class="btn secondary">حفظ قسيمة</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>الموظف</th>
+        <th>الشهر</th>
+        <th>الأساسي</th>
+        <th>الإضافي</th>
+        <th>البدلات</th>
+        <th>الخصم</th>
+        <th>الصافي</th>
+        <th>إجراءات</th>
+      </tr>
+    </thead>
+    <tbody id="payrollBody"></tbody>
+  </table>
+</section>
+
+      <section id="performance" class="section card" style="display:none">
+        <h2>إدارة الأداء</h2>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+          <select id="perfEmployee" class="form-control"></select>
+          <input id="perfTitle" class="form-control" placeholder="عنوان التقييم" />
+          <select id="perfRating" class="form-control"><option value="5">5 ممتاز</option><option value="4">4 جيد جداً</option><option value="3">3 جيد</option><option value="2">2 مقبول</option><option value="1">1 ضعيف</option></select>
+          <button id="perfSave" class="btn">أضف تقييم</button>
+        </div>
+        <table><thead><tr><th>الموظف</th><th>العنوان</th><th>التقييم</th><th>التاريخ</th><th>ملاحظات</th></tr></thead>
+        <tbody id="perfBody"></tbody></table>
+      </section>
+
+      <section id="training" class="section card" style="display:none">
+        <h2>التدريب والتطوير</h2>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+          <input id="trainingTitle" class="form-control" placeholder="عنوان الدورة" />
+          <input id="trainingDate" type="date" class="form-control" />
+          <button id="trainingCreate" class="btn">إنشاء دورة</button>
+        </div>
+        <div id="trainingList">لا توجد دورات</div>
+      </section>
+
+      <section id="leaves" class="section card" style="display:none">
+        <h2>إدارة الإجازات</h2>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+          <select id="leaveEmployee" class="form-control"></select>
+          <input id="leaveStart" type="date" class="form-control" />
+          <input id="leaveEnd" type="date" class="form-control" />
+          <button id="leaveRequest" class="btn">طلب إجازة</button>
+        </div>
+        <table><thead><tr><th>الموظف</th><th>الفترة</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+        <tbody id="leavesBody"></tbody></table>
+      </section>
+
+      <section id="reports" class="section card" style="display:none">
+        <h2>التقارير والإحصائيات</h2>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+          <button id="reportGenerate" class="btn">توليد تقرير</button>
+          <button id="exportCSVBtn" class="btn secondary">تصدير CSV</button>
+          <button id="showCharts" class="btn ghost">إظهار رسوم</button>
+        </div>
+        <div id="reportArea">لا تقرير</div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Modals -->
+  <div id="employeeModal" class="modal" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-labelledby="modalTitle">
+      <h3 id="modalTitle">إضافة / تعديل موظف</h3>
+      <form id="employeeForm">
+        <div class="form-row">
+          <div class="col"><label>الاسم الأول</label><input id="e_first" class="form-control" required></div>
+          <div class="col"><label>العائلة</label><input id="e_last" class="form-control"></div>
+        </div>
+        <div class="form-row">
+          <div class="col"><label>القسم</label>
+            <select id="e_dept" class="form-control"></select>
+          </div>
+          <div class="col"><label>المسمى الوظيفي</label><input id="e_title" class="form-control"></div>
+        </div>
+        <div class="form-row">
+          <div class="col"><label>الهاتف</label><input id="e_phone" class="form-control"></div>
+          <div class="col"><label>البريد</label><input id="e_email" class="form-control" type="email"></div>
+        </div>
+        <div class="form-row">
+          <div class="col"><label>تاريخ التوظيف</label><input id="e_hire" type="date" class="form-control"></div>
+          <div class="col"><label>الراتب الأساسي</label><input id="e_salary" type="number" class="form-control"></div>
+        </div>
+        <div style="text-align:left;margin-top:8px">
+          <button type="submit" class="btn">حفظ</button>
+          <button type="button" id="employeeCancel" class="btn secondary">إلغاء</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Job modal -->
+  <div id="jobModal" class="modal" aria-hidden="true">
+    <div class="modal-card">
+      <h3>إعلان وظيفة جديد</h3>
+      <form id="jobForm">
+        <div class="form-row"><div class="col"><label>المسمى</label><input id="jobTitle" class="form-control" required></div></div>
+        <div class="form-row"><div class="col"><label>الوصف</label><textarea id="jobDesc" class="form-control"></textarea></div></div>
+        <div style="text-align:left;margin-top:8px">
+          <button type="submit" class="btn">نشر</button>
+          <button type="button" id="jobCancel" class="btn secondary">إلغاء</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Charts area (hidden) -->
+  <div id="chartsArea" class="modal" style="display:none;align-items:center;justify-content:center">
+    <div class="modal-card">
+      <h3>رسوم بيانية</h3>
+      <canvas id="chartCanvas" width="800" height="360" style="background:#fff;border-radius:6px"></canvas>
+      <div style="text-align:left;margin-top:8px"><button id="closeCharts" class="btn secondary">إغلاق</button></div>
+    </div>
+  </div>
+<script src="js/index.js"></script>
+</body>
+</html>
